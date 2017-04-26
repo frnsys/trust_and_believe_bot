@@ -1,16 +1,23 @@
 import arena
 import config
+import random
 from time import sleep
 
 arena.access_token = config.ARENA_TOKEN
 
+patterns = [
+    'I was just reading something about this...I think it was called "{title}".',
+    'This reminds me of "{title}"!'
+]
 
-def watch_chan(chan, on_new_block, poll_every=1):
+
+def watch_chan(chan, on_new_block, poll_every=1, replay=True):
     chan = arena.channels.channel(chan)
     blocks, _ = chan.contents()
 
-    for b in blocks:
-        on_new_block(b)
+    if replay:
+        for b in blocks:
+            on_new_block(b)
 
     while True:
         blocks_, _ = chan.contents()
@@ -26,9 +33,15 @@ def watch_chan(chan, on_new_block, poll_every=1):
         sleep(poll_every)
 
 
+def say(block):
+    pattern = random.choice(patterns)
+    statement = pattern.format(**block.__dict__)
+    print(statement)
+
+
 if __name__ == '__main__':
     def on_new_block(block):
-        print('new block:', block.title)
+        say(block)
 
     try:
         watch_chan(config.WATCH_CHAN, on_new_block)
