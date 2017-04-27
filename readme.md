@@ -31,5 +31,3 @@ create directories `media` and `txt` if they don't exist
 ## usage
 
 - run `rscript pulldown.R`
-
-"xtable" %in% rownames(installed.packages())
