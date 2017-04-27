@@ -1,3 +1,5 @@
+# channel watch
+
 ## setup
 
 install reqs:
@@ -12,3 +14,22 @@ setup a `config.py` at `secret/config.py`. it should have the following values:
 ## usage
 
 run `main.py`
+
+
+# pdf / web parsing from Are.na Channel
+
+## setup
+
+install reqs:
+
+    R
+
+add `ARCHIVE_CHAN = 'channel-slug'` to `secret/config.py` with token above
+
+create directories `media` and `txt` if they don't exist
+
+## usage
+
+- run `rscript pulldown.R`
+
+"xtable" %in% rownames(installed.packages())
