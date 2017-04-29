@@ -1,17 +1,24 @@
 import arena
 import config
 import random
+import pandas as pd
 from time import sleep
+
+adj_mat = pd.read_csv('data.csv', index_col='id')
 
 arena.access_token = config.ARENA_TOKEN
 
 patterns = [
-    'I was just reading something about this...I think it was called "{title}".',
-    'This reminds me of "{title}"!'
+    'This reminds of this passage:',
+    'You might find this relevant:',
+    'Sounds like this might be useful:',
+    'I\'m reminded of:',
+    'Have you read this before?',
+    'Have you considered:',
 ]
 
 
-def watch_chan(chan, on_new_block, poll_every=1, replay=True):
+def watch_chan(chan, on_new_block, poll_every=1, prob=0.02, replay=True):
     chan = arena.channels.channel(chan)
     blocks, _ = chan.contents()
 
@@ -30,13 +37,34 @@ def watch_chan(chan, on_new_block, poll_every=1, replay=True):
                     sleep(poll_every*2)
                 on_new_block(b)
             blocks = blocks_
+        else:
+            if random.random() < prob/poll_every:
+                on_new_block(blocks[-1])
         sleep(poll_every)
 
 
 def say(block):
     pattern = random.choice(patterns)
-    statement = pattern.format(**block.__dict__)
+    id = get_similar(str(block.id))
+    para = sample_text(id)
+    para = '\n\n> {}\n'.format(para)
+    statement = pattern + para
     print(statement)
+    print('---')
+
+
+def get_similar(id, choices=3):
+    """returns the most similar id for the specified id"""
+    choices = adj_mat.loc[id].sort_values(ascending=False).index[1:1+choices]
+    return random.choice(choices)
+
+
+def sample_text(id):
+    """returns a random paragraph from block text of the specified id"""
+    with open('texts/{}.txt'.format(id)) as f:
+        text = f.read()
+    paras = [p for p in text.split('\n') if p.strip()]
+    return random.choice(paras)
 
 
 if __name__ == '__main__':
@@ -44,6 +72,6 @@ if __name__ == '__main__':
         say(block)
 
     try:
-        watch_chan(config.WATCH_CHAN, on_new_block)
+        watch_chan(config.WATCH_CHAN, on_new_block, replay=False)
     except (KeyboardInterrupt, SystemExit):
         pass
