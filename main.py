@@ -46,17 +46,21 @@ def watch_chan(chan, on_new_block, poll_every=1, prob=0.02, replay=True):
 def say(block):
     pattern = random.choice(patterns)
     id = get_similar(str(block.id))
-    para = sample_text(id)
-    para = '\n\n> {}\n'.format(para)
-    statement = pattern + para
-    print(statement)
-    print('---')
+    if id is not None:
+        para = sample_text(id)
+        para = '\n\n> {}\n'.format(para)
+        statement = pattern + para
+        print(statement)
+        print('---')
 
 
 def get_similar(id, choices=3):
     """returns the most similar id for the specified id"""
-    choices = adj_mat.loc[id].sort_values(ascending=False).index[1:1+choices]
-    return random.choice(choices)
+    try:
+        choices = adj_mat.loc[id].sort_values(ascending=False).index[1:1+choices]
+        return random.choice(choices)
+    except KeyError:
+        return None
 
 
 def sample_text(id):
